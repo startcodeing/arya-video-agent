@@ -133,10 +133,11 @@ async def health():
 
 
 # Import and register routes
-from app.api.routes import health, tasks, websocket  # noqa: E402
+from app.api.routes import health, tasks, websocket, conversation  # noqa: E402
 app.include_router(health.router, tags=["Health"])
 app.include_router(tasks.router)
 app.include_router(websocket.router)
+app.include_router(conversation.router, tags=["Conversations"])
 
 
 if __name__ == "__main__":
