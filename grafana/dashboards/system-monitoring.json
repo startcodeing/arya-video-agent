@@ -1,0 +1,818 @@
+{
+  "dashboard": {
+    "title": "Arya Video Agent - System Monitoring",
+    "tags": ["video-agent", "prometheus", "monitoring"],
+    "timezone": "browser",
+    "refresh": "30s",
+    "id": null,
+    "uid": "arya-video-agent-monitoring",
+    "version": 1,
+    "links": [],
+    "schemaVersion": 38,
+    "templating": {
+      "list": []
+    },
+    "rows": [
+      {
+        "title": "Overview",
+        "gridPos": {
+          "h": 4,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "panels": [
+          {
+            "id": 2,
+            "title": "System Health",
+            "type": "stat",
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": [
+                {
+                  "calcs": ["mean"],
+                  "fields": "",
+                  "values": false
+                }
+              ],
+              "textMode": "auto",
+              "text": {},
+              "textMode": "auto",
+              "color": {
+                "exponent": 0.5,
+                "fill": "dark-orange",
+                "mode": "opacity"
+              },
+              "mappings": [
+                {
+                  "id": 0,
+                  "op": "=",
+                  "text": "Healthy",
+                  "type": 1,
+                  "value": "1"
+                },
+                {
+                  "id": 1,
+                  "op": "=",
+                  "text": "Degraded",
+                  "type": 1,
+                  "value": "0.5"
+                },
+                {
+                  "id": 2,
+                  "op": "=",
+                  "text": "Unhealthy",
+                  "type": 1,
+                  "value": "0"
+                }
+              ],
+              "maxDataPoints": 100,
+              "minSpan": 1
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "refId": "health_metric_target",
+                "expr": "up{job=\"prometheus\"} / up{job=\"prometheus\"} * 100"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "percent",
+                "min": 0,
+                "max": 100,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "options": {
+              "orientation": "auto",
+              "mode": "single",
+              "reduceOptions": [
+                {
+                  "calcs": ["lastNotNull"],
+                  "fields": "",
+                  "values": false
+                }
+              ]
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 3,
+            "title": "Uptime (24h)",
+            "type": "stat",
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": [
+                {
+                  "calcs": ["mean"],
+                  "fields": "",
+                  "values": false
+                }
+              ],
+              "textMode": "auto",
+              "color": {
+                "exponent": 0.5,
+                "fill": "dark-blue",
+                "mode": "opacity"
+              },
+              "mappings": [],
+              "maxDataPoints": 100,
+              "minSpan": 1
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "sum(increase(up{job=\"prometheus\"}[5m])) / 60"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "h",
+                "min": 0,
+                "max": 24,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "options": {
+              "orientation": "auto",
+              "mode": "single",
+              "reduceOptions": [
+                {
+                  "calcs": ["lastNotNull"],
+                  "fields": "",
+                  "values": false
+                }
+              ]
+            },
+            "transform": "",
+            "transparent": false
+          }
+        ]
+      },
+      {
+        "title": "API Metrics",
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 4
+        },
+        "id": 4,
+        "panels": [
+          {
+            "id": 5,
+            "title": "HTTP Requests (RPS)",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "calcs": ["mean"],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "req/s"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{app=\"arya-video-agent\"}[5m])"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "req/s",
+                "min": 0,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 6,
+            "title": "HTTP Request Latency",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "calcs": ["0.95", "0.99"],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "ms"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, http_request_duration_seconds{app=\"arya-video-agent\"})"
+              },
+              {
+                "expr": "histogram_quantile(0.99, http_request_duration_seconds{app=\"arya-video-agent\"})"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "ms",
+                "min": 0,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 7,
+            "title": "HTTP Error Rate",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "calcs": ["mean"],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "errors/s"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "rate(http_errors_total{app=\"arya-video-agent\"}[5m])"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "errors/s",
+                "min": 0,
+                "decimals": 4
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          }
+        ]
+      },
+      {
+        "title": "Task Metrics",
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 10
+        },
+        "id": 8,
+        "panels": [
+          {
+            "id": 9,
+            "title": "Active Tasks by Status",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "tasks"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "tasks_active{status=\"pending\"}"
+              },
+              {
+                "expr": "tasks_active{status=\"processing\"}"
+              },
+              {
+                "expr": "tasks_active{status=\"completed\"}"
+              },
+              {
+                "expr": "tasks_active{status=\"failed\"}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "tasks",
+                "min": 0,
+                "decimals": 0
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 10,
+            "title": "Task Duration (P95, P99)",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "calcs": ["0.95", "0.99"],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "s"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, task_duration_seconds{app=\"arya-video-agent\"})"
+              },
+              {
+                "expr": "histogram_quantile(0.99, task_duration_seconds{app=\"arya-video-agent\"})"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "s",
+                "min": 0,
+                "decimals": 3
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 11,
+            "title": "Task Completion Rate",
+            "type": "stat",
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": [
+                {
+                  "calcs": ["lastNotNull"],
+                  "fields": "",
+                  "values": false
+                }
+              ],
+              "textMode": "auto",
+              "color": {
+                "exponent": 0.5,
+                "fill": "dark-green",
+                "mode": "opacity"
+              },
+              "mappings": [],
+              "maxDataPoints": 100,
+              "minSpan": 1
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "sum(increase(tasks_total{status=\"completed\"}[5m]))"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "tasks/min",
+                "min": 0,
+                "max": 100,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "options": {
+              "orientation": "auto",
+              "mode": "single",
+              "reduceOptions": [
+                {
+                  "calcs": ["lastNotNull"],
+                  "fields": "",
+                  "values": false
+                }
+              ]
+            },
+            "transform": "",
+            "transparent": false
+          }
+        ]
+      },
+      {
+        "title": "Database Metrics",
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        },
+        "id": 12,
+        "panels": [
+          {
+            "id": 13,
+            "title": "Database Query Duration (P95)",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "ms"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, db_query_duration_seconds{app=\"arya-video-agent\"})"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "ms",
+                "min": 0,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 14,
+            "title": "Active Database Connections",
+            "type": "gauge",
+            "options": {
+              "min": 0,
+              "max": 50,
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 30
+                  },
+                  {
+                    "color": "red",
+                    "value": 40
+                  }
+                ]
+              },
+              "graph": {}
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "db_connections_active{app=\"arya-video-agent\"}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "connections",
+                "min": 0,
+                "max": 50,
+                "decimals": 0
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          }
+        ]
+      },
+      {
+        "title": "Cache Metrics",
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 12,
+          "y": 16
+        },
+        "id": 15,
+        "panels": [
+          {
+            "id": 16,
+            "title": "Cache Hit Rate",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "percent",
+                  "min": 0,
+                  "max": 100
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "cache_hit_rate{app=\"arya-video-agent\", namespace=\"tasks\"} * 100"
+              },
+              {
+                "expr": "cache_hit_rate{app=\"arya-video-agent\", namespace=\"conversations\"} * 100"
+              },
+              {
+                "expr": "cache_hit_rate{app=\"arya-video-agent\", namespace=\"scripts\"} * 100"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "percent",
+                "min": 0,
+                "max": 100,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 17,
+            "title": "Cache Size by Namespace",
+            "type": "stat",
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": [
+                {
+                  "calcs": ["lastNotNull"],
+                  "fields": "",
+                  "values": false
+                }
+              ],
+              "textMode": "auto",
+              "color": {
+                "exponent": 0.5,
+                "fill": "dark-blue",
+                "mode": "opacity"
+              },
+              "mappings": [],
+              "maxDataPoints": 100,
+              "minSpan": 1
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "cache_size_bytes{app=\"arya-video-agent\", namespace=\"tasks\"} / 1024"
+              },
+              {
+                "expr": "cache_size_bytes{app=\"arya-video-agent\", namespace=\"conversations\"} / 1024"
+              },
+              {
+                "expr": "cache_size_bytes{app=\"arya-video-agent\", namespace=\"scripts\"} / 1024"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "KB",
+                "min": 0,
+                "max": 100000,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "options": {
+              "orientation": "auto",
+              "mode": "single",
+              "reduceOptions": [
+                {
+                  "calcs": ["lastNotNull"],
+                  "fields": "",
+                  "values": false
+                }
+              ]
+            },
+            "transform": "",
+            "transparent": false
+          }
+        ]
+      },
+      {
+        "title": "System Resources",
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 22
+        },
+        "id": 18,
+        "panels": [
+          {
+            "id": 19,
+            "title": "CPU Usage",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "percent",
+                  "min": 0,
+                  "max": 100
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "cpu_usage_percent{app=\"arya-video-agent\"}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "percent",
+                "min": 0,
+                "max": 100,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 20,
+            "title": "Memory Usage",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "MB"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "memory_usage_bytes{app=\"arya-video-agent\"} / 1024 / 1024"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "MB",
+                "min": 0,
+                "max": 100000,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          },
+          {
+            "id": 21,
+            "title": "Disk Usage",
+            "type": "graph",
+            "options": {
+              "legend": {
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              },
+              "graph": {
+                "leftAxis": {
+                  "unit": "GB"
+                }
+              }
+            },
+            "pluginVersion": "6.6.0",
+            "targets": [
+              {
+                "expr": "disk_usage_bytes{app=\"arya-video-agent\", mount_point=\"/\"} / 1024 / 1024 / 1024"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "GB",
+                "min": 0,
+                "max": 1000,
+                "decimals": 2
+              },
+              "overrides": {}
+            },
+            "transform": "",
+            "transparent": false
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        {
+          "value": "10s"
+        },
+        {
+          "value": "30s"
+        },
+        {
+          "value": "1m"
+        },
+        {
+          "value": "5m"
+        },
+        {
+          "value": "15m"
+        },
+        {
+          "value": "30m"
+        },
+        {
+          "value": "1h"
+        }
+      ]
+    },
+    "timezone": "",
+    "title": "Arya Video Agent - System Monitoring"
+  }
+}

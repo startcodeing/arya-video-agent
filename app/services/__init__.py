@@ -1,7 +1,6 @@
 """Services layer for application logic."""
 
-from app.services.prometheus_metrics import PrometheusMetricsService, metrics_service, REGISTRY
-from app.services.redis_cache_service import RedisCacheService
+# Cache Services
 from app.services.cache_config import (
     CacheNamespace,
     CacheVersion,
@@ -10,21 +9,27 @@ from app.services.cache_config import (
     CacheConfig,
     CacheMetadata,
 )
+from app.services.redis_cache_service import RedisCacheService
+
+# Monitoring Services
+from app.services.prometheus_metrics import (
+    PrometheusMetricsService,
+    REGISTRY,
+    metrics_service,
+)
 
 __all__ = [
-    # Metrics and monitoring
-    "PrometheusMetricsService",
-    "metrics_service",
-    "REGISTRY",
-
-    # Cache
-    "RedisCacheService",
-
-    # Cache configuration
+    # Cache Services
     "CacheNamespace",
     "CacheVersion",
     "CacheTTL",
     "CacheKeyGenerator",
     "CacheConfig",
     "CacheMetadata",
+    "RedisCacheService",
+
+    # Monitoring Services
+    "PrometheusMetricsService",
+    "REGISTRY",
+    "metrics_service",
 ]
