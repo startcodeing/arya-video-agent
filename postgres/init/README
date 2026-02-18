@@ -1,0 +1,11 @@
+-- PostgreSQL Init Database Directory
+-- Place SQL initialization scripts in this directory
+-- They will be executed automatically when PostgreSQL starts
+
+-- Example initialization scripts:
+-- - 01_create_extensions.sql - Create database extensions
+-- - 02_create_schemas.sql - Create database schemas
+-- - 03_create_users.sql - Create database users and roles
+-- - 04_grant_permissions.sql - Grant necessary permissions
+-- - 05_create_tables.sql - Create initial tables
+-- - 06_seed_data.sql - Seed initial data

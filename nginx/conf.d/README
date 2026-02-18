@@ -1,0 +1,9 @@
+# Nginx additional configurations directory
+# Place additional .conf files in this directory
+# They will be automatically included in the main nginx.conf
+
+# Example configurations:
+# - ssl-offloading.conf - SSL offloading configuration
+# - rate-limiting.conf - Advanced rate limiting rules
+# - security-headers.conf - Additional security headers
+# - cache-control.conf - Advanced cache control rules
