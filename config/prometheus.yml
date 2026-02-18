@@ -1,0 +1,91 @@
+# Prometheus configuration for Arya Video Agent
+
+# Global settings
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+# Rule files
+rule_files:
+  - "/etc/prometheus/alerts.yml"
+
+# Alerting
+alerting:
+  alertmanagers:
+    - name: 'default'
+      static_configs:
+        - send_resolved: true
+
+# Scrape configurations
+scrape_configs:
+  # FastAPI application metrics
+  - job_name: 'video-agent-api'
+    static_configs:
+      - targets: ['video-agent:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    honor_labels: true
+    honor_timestamps: true
+    scheme: http
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+        regex: '([^:]+)(?::\\d+)?;(.+)'
+        replacement: '${2}'
+        action: replace
+
+  # Redis metrics (if available)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 5s
+    honor_labels: true
+    honor_timestamps: true
+    scheme: http
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+        regex: '([^:]+)(?::\\d+)?;(.+)'
+        replacement: '${2}'
+        action: replace
+
+  # PostgreSQL metrics (if available)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 5s
+    honor_labels: true
+    honor_timestamps: true
+    scheme: http
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+        regex: '([^:]+)(?::\\d+)?;(.+)'
+        replacement: '${2}'
+        action: replace
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus/
+    retention.time: 30d
+    retention.size: 10GB
+
+# Remote write (optional, for remote Prometheus)
+# remote_write:
+#   - url: "http://prometheus-remote:9090/api/v1/write"
+#     basic_auth:
+#       username: "admin"
+#       password: "password"
+#     write_relabel_configs:
+#       - source_labels: [__address__]
+#         target_label: "instance"
+#         regex: '([^:]+)(?::\\d+)?;(.+)'
+#         replacement: '${2}'
+#         action: replace

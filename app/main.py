@@ -1,4 +1,4 @@
-"""FastAPI application entry point."""
+"""FastAPI application entry point with Prometheus monitoring."""
 
 import time
 from contextlib import asynccontextmanager
@@ -13,6 +13,10 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.utils.logger import setup_logger, get_logger
 
+# Import Prometheus middleware
+from app.middleware.prometheus import setup_prometheus_middleware
+from app.services.prometheus_metrics import metrics_service, PrometheusMetricsService
+
 # Setup logger
 setup_logger(
     log_file=settings.LOG_FILE,
@@ -25,12 +29,18 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
+    """Application lifespan manager with Prometheus initialization."""
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"Environment: {settings.ENV}")
     logger.info(f"Debug mode: {settings.DEBUG}")
 
-    # Startup logic
+    # Initialize Prometheus metrics service
+    try:
+        await metrics_service.initialize()
+        logger.info("Prometheus metrics service initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize Prometheus metrics service: {str(e)}")
+
     yield
 
     # Shutdown logic
@@ -41,7 +51,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="AI Video Generation Agent System",
+    description="AI Video Generation Agent System with Prometheus Monitoring",
     docs_url="/api/docs" if settings.DEBUG else None,
     redoc_url="/api/redoc" if settings.DEBUG else None,
     lifespan=lifespan,
@@ -58,6 +68,13 @@ app.add_middleware(
 
 # Add GZip middleware for compression
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Add Prometheus metrics middleware
+try:
+    setup_prometheus_middleware(app, metrics_path="/metrics")
+    logger.info("Prometheus middleware initialized")
+except Exception as e:
+    logger.error(f"Failed to setup Prometheus middleware: {str(e)}")
 
 
 @app.middleware("http")
@@ -90,13 +107,13 @@ async def validation_exception_handler(
     exc: RequestValidationError
 ) -> JSONResponse:
     """Handle validation errors."""
-    logger.warning(f"Validation error on {request.url}: {exc.errors()}")
+    logger.warning(f"Validation error on {request.url.path}: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "error": "Validation Error",
             "message": exc.errors(),
-            "path": str(request.url),
+            "path": str(request.url.path),
         },
     )
 
@@ -104,13 +121,13 @@ async def validation_exception_handler(
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle global exceptions."""
-    logger.error(f"Unhandled exception on {request.url}: {exc}", exc_info=True)
+    logger.error(f"Unhandled exception on {request.url.path}: {exc}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error": "Internal Server Error",
             "message": str(exc) if settings.DEBUG else "An error occurred",
-            "path": str(request.url),
+            "path": str(request.url.path),
         },
     )
 
@@ -123,20 +140,32 @@ async def root():
         "version": settings.APP_VERSION,
         "status": "running",
         "environment": settings.ENV,
+        "monitoring": "prometheus",
+        "metrics": "/metrics",
     }
 
 
 @app.get("/health")
 async def health():
-    """Simple health check endpoint."""
-    return {"status": "healthy"}
+    """Health check endpoint with Prometheus metrics."""
+    # Check Prometheus health
+    prometheus_health = await metrics_service.health_check()
+
+    return {
+        "status": prometheus_health.get("status", "unknown"),
+        "environment": settings.ENV,
+        "app_name": settings.APP_NAME,
+        "app_version": settings.APP_VERSION,
+        "monitoring": "prometheus",
+        "metrics": prometheus_health.get("metrics", {}),
+    }
 
 
 # Import and register routes
 from app.api.routes import health, tasks, websocket, conversation  # noqa: E402
 app.include_router(health.router, tags=["Health"])
-app.include_router(tasks.router)
-app.include_router(websocket.router)
+app.include_router(tasks.router, tags=["Tasks"])
+app.include_router(websocket.router, tags=["WebSocket"])
 app.include_router(conversation.router, tags=["Conversations"])
 
 
