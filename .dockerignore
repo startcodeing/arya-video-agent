@@ -1,3 +1,7 @@
+# Docker ignore file
+# Prevents unnecessary files from being included in the Docker image
+
+# ============================================================
 # Python
 # ============================================================
 __pycache__/
@@ -5,20 +9,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
+dist/
+build/
 *.egg
 MANIFEST
 
@@ -26,10 +19,9 @@ MANIFEST
 # Virtual Environments
 # ============================================================
 venv/
-ENV/
 env/
+ENV/
 .venv
-.ENV/
 
 # ============================================================
 # IDE
@@ -40,62 +32,58 @@ env/
 *.swo
 *~
 .DS_Store
-*.sublime-project
-*.sublime-workspace
-*.code-workspace
 
 # ============================================================
-# Testing
+# Git
 # ============================================================
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# ============================================================
+# Documentation
+# ============================================================
+docs/
+*.md
+!README.md
+
+# ============================================================
+# Tests
+# ============================================================
+tests/
 .pytest_cache/
 .coverage
-.coverage.*
 htmlcov/
-.tox/
-.nox/
-.cache
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pyre/
-.hypothesis/
-*.prof
 
 # ============================================================
-# Logging
+# Logs
 # ============================================================
-*.log
 logs/
-app/logs/
+*.log
+*.log.*
 
 # ============================================================
-# Environment Variables
+# Docker
+# ============================================================
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# ============================================================
+# Configuration
 # ============================================================
 .env
-.env.*
-.envrc
-.envrc
 .env.local
 .env.*.local
-.env.development
-.env.test
-.env.production
 .envrc
-.envrc.*
+*rc
 
 # ============================================================
-# Secrets and Certificates
+# Storage
 # ============================================================
-*.pem
-*.key
-*.crt
-*.csr
-*.cer
-*.p12
-*.pfx
-!nginx/ssl/cert.pem
-!nginx/ssl/key.pem
-!postgres/init/ssl/
+app/storage/
+app/logs/
 
 # ============================================================
 # Database
@@ -105,61 +93,6 @@ app/logs/
 *.sqlite3
 *.sql
 !postgres/init/*.sql
-!alembic/versions/*.sql
-
-# ============================================================
-# Docker
-# ============================================================
-Dockerfile
-docker-compose*.yml
-.dockerignore
-!docker-compose.yml
-
-# ============================================================
-# Storage
-# ============================================================
-app/storage/
-app/storage/media/
-app/storage/videos/
-app/storage/images/
-app/storage/thumbnails/
-
-# ============================================================
-# Backup and Archives
-# ============================================================
-*.bak
-*.backup
-*.old
-*.tar
-*.tar.gz
-*.zip
-*.7z
-*.rar
-
-# ============================================================
-# OS Files
-# ============================================================
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# ============================================================
-# Node.js (if any)
-# ============================================================
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# ============================================================
-# Documentation Builds
-# ============================================================
-site/
-_site/
 
 # ============================================================
 # Temporary Files
@@ -174,44 +107,53 @@ temp/
 *.pid.lock
 
 # ============================================================
-# Jupyter Notebook
+# OS Files
 # ============================================================
-.ipynb_checkpoints/
-.ipynb_checkpoints/*
-*.ipynb
+.DS_Store
+Thumbs.db
+desktop.ini
 
 # ============================================================
-# Security
+# Backup Files
 # ============================================================
-# Keep .dockerignore and .gitignore in repo
-!.dockerignore
-!.gitignore
+*.bak
+*.backup
+*.old
 
-# Keep README files in repo
-!README.md
-!README.*
+# ============================================================
+# SSL/TLS Certificates
+# ============================================================
+*.pem
+*.key
+*.crt
+*.csr
+*.cer
+!nginx/ssl/cert.pem
+!nginx/ssl/key.pem
 
-# Keep documentation in repo
-!docs/
+# ============================================================
+# Node.js (if any)
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Keep nginx configuration in repo
-!nginx/
+# ============================================================
+# Archives
+# ============================================================
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
 
-# Keep prometheus configuration in repo
-!prometheus/
-
-# Keep grafana configuration in repo
-!grafana/
-
-# Keep docker-compose.yml in repo
-!docker-compose.yml
-
-# Keep Dockerfile in repo
-!Dockerfile
-
-# Keep requirements.txt in repo
-!requirements.txt
-
-# Keep setup scripts in repo
-!setup.sh
-!setup/
+# ============================================================
+# Other
+# ============================================================
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.iml
