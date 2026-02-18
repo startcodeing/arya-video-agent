@@ -1,0 +1,304 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "100 - (avg by (job) (irate(node_cpu_seconds_total{job=\"prometheus\"}[5m])) * 100)",
+          "legendFormat": "{{job}} - {{instance}}",
+          "refId": "A",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "CPU Usage (%)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "(1 - (avg by (job) (irate(node_memory_MemAvailable_bytes{job=\"prometheus\"}[5m])) / node_memory_MemTotal_bytes{job=\"prometheus\"})) * 100)",
+          "legendFormat": "{{job}} - {{instance}}",
+          "refId": "B",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Memory Available (%)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "avg by (job) (rate(node_filesystem_avail_bytes{job=\"prometheus\"}[5m]))",
+          "legendFormat": "{{job}} - {{instance}} - {{mountpoint}}",
+          "refId": "C",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Disk I/O (bytes/s)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total[5m])",
+          "legendFormat": "HTTP Requests",
+          "refId": "D",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Request Rate",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "95th Percentile",
+          "refId": "E",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Response Time (p95)",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "tasks_active",
+          "legendFormat": "Active Tasks",
+          "refId": "F",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Active Tasks",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 4
+      },
+      "id": 7,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "cache_hit_rate",
+          "legendFormat": "Cache Hit Rate",
+          "refId": "G",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Cache Hit Rate (%)",
+      "type": "gauge"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 16,
+  "style": "dark",
+  "tags": [
+    "system",
+    "monitoring"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "System Overview",
+  "uid": "system-overview",
+  "version": 0,
+  "year": 2024
+}

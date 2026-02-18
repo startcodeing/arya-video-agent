@@ -1,0 +1,288 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{endpoint!=\"/health\", endpoint!=\"/metrics\"}[5m])",
+          "legendFormat": "{{method}} {{endpoint}}",
+          "refId": "A",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Request Rate (req/s)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{endpoint!=\"/health\", endpoint!=\"/metrics\"}[5m]))",
+          "legendFormat": "{{method}} {{endpoint}}",
+          "refId": "B",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "95th Percentile Response Time (s)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "rate(http_errors_total{endpoint!=\"/health\", endpoint!=\"/metrics\"}[5m])",
+          "legendFormat": "{{method}} {{endpoint}}",
+          "refId": "C",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Error Rate (req/s)",
+      "type": "graph"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "sum(http_requests_total{endpoint=\"/tasks\"})",
+          "legendFormat": "/tasks endpoint",
+          "refId": "D",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        },
+        {
+          "expr": "sum(http_requests_total{endpoint=\"/conversations\"})",
+          "legendFormat": "/conversations endpoint",
+          "refId": "E",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        },
+        {
+          "expr": "sum(http_requests_total{endpoint=\"/conversations/{id}/messages\"})",
+          "legendFormat": "/conversations/messages endpoint",
+          "refId": "F",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Requests by Endpoint",
+      "type": "graph"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{status=~\"4..\"}[5m])",
+          "legendFormat": "Client Errors (4xx)",
+          "refId": "G",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        },
+        {
+          "expr": "rate(http_requests_total{status=~\"5..\"}[5m])",
+          "legendFormat": "Server Errors (5xx)",
+          "refId": "H",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Error Rate by Status Code",
+      "type": "graph"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {},
+        "textMode": "auto",
+        "textTitle": ""
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{method=\"GET\", endpoint=\"/tasks\"}[5m]))",
+          "legendFormat": "GET /tasks - 50th percentile",
+          "refId": "I",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{method=\"GET\", endpoint=\"/tasks\"}[5m]))",
+          "legendFormat": "GET /tasks - 95th percentile",
+          "refId": "J",
+          "datasource": "Prometheus",
+          "hide": false,
+          "type": "query"
+        }
+      ],
+      "title": "Response Time Percentiles (/tasks)",
+      "type": "graph"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 16,
+  "style": "dark",
+  "tags": [
+    "api",
+    "performance",
+    "monitoring"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "API Performance",
+  "uid": "api-performance",
+  "version": 1,
+  "year": 2024
+}

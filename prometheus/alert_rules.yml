@@ -1,0 +1,312 @@
+# Prometheus Alert Rules Configuration
+
+# Global settings
+global:
+  # Default evaluation interval (evaluate rules every 30 seconds)
+  evaluation_interval: 30s
+
+  # Default notification timeout
+  notification_timeout: 5m
+
+  # Send notifications immediately
+  send_resolved: true
+
+# Alert rule groups
+groups:
+  - name: api_performance
+    rules:
+      - name: HighAPIResponseTime
+        # Alert if 95th percentile response time > 500ms for 5 minutes
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+          metric: response_time
+        annotations:
+          summary: "High API response time detected"
+          description: "95th percentile API response time is > 500ms for 5 minutes"
+
+      - name: VeryHighAPIResponseTime
+        # Alert if 95th percentile response time > 1000ms for 1 minute
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1.0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+          metric: response_time
+        annotations:
+          summary: "Very high API response time detected"
+          description: "95th percentile API response time is > 1000ms for 1 minute"
+
+      - name: HighAPIErrorRate
+        # Alert if error rate > 5% for 5 minutes
+        expr: |
+          rate(http_errors_total[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+          metric: error_rate
+        annotations:
+          summary: "High API error rate detected"
+          description: "API error rate is > 5% for 5 minutes"
+
+      - name: CriticalAPIErrorRate
+        # Alert if error rate > 10% for 1 minute
+        expr: |
+          rate(http_errors_total[1m]) / rate(http_requests_total[1m]) > 0.10
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+          metric: error_rate
+        annotations:
+          summary: "Critical API error rate detected"
+          description: "API error rate is > 10% for 1 minute"
+
+  - name: system_resources
+    rules:
+      - name: HighCPUUsage
+        # Alert if CPU usage > 80% for 5 minutes
+        expr: |
+          avg by (instance) (rate(node_cpu_seconds_total{job=\"prometheus\"}[5m])) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+          metric: cpu_usage
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Average CPU usage is > 80% for 5 minutes"
+
+      - name: CriticalCPUUsage
+        # Alert if CPU usage > 95% for 1 minute
+        expr: |
+          avg by (instance) (rate(node_cpu_seconds_total{job=\"prometheus\"}[1m])) > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+          metric: cpu_usage
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "Average CPU usage is > 95% for 1 minute"
+
+      - name: HighMemoryUsage
+        # Alert if memory usage > 80% for 5 minutes
+        expr: |
+          avg by (instance) (1 - (rate(node_memory_MemAvailable_bytes{job=\"prometheus\"}[5m]) / rate(node_memory_MemTotal_bytes{job=\"prometheus\"}[5m]))) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+          metric: memory_usage
+        annotations:
+          summary: "High memory usage detected"
+          description: "Average memory usage is > 80% for 5 minutes"
+
+      - name: CriticalMemoryUsage
+        # Alert if memory usage > 95% for 1 minute
+        expr: |
+          avg by (instance) (1 - (rate(node_memory_MemAvailable_bytes{job=\"prometheus\"}[1m]) / rate(node_memory_MemTotal_bytes{job=\"prometheus\"}[1m]))) > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+          metric: memory_usage
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Average memory usage is > 95% for 1 minute"
+
+  - name: database_performance
+    rules:
+      - name: HighDatabaseQueryLatency
+        # Alert if average query latency > 100ms for 5 minutes
+        expr: |
+          avg by (table, operation) (rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          metric: query_latency
+        annotations:
+          summary: "High database query latency detected"
+          description: "Average database query latency is > 100ms for 5 minutes"
+
+      - name: CriticalDatabaseQueryLatency
+        # Alert if average query latency > 500ms for 1 minute
+        expr: |
+          avg by (table, operation) (rate(db_query_duration_seconds_sum[1m]) / rate(db_query_duration_seconds_count[1m])) > 0.5
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+          metric: query_latency
+        annotations:
+          summary: "Critical database query latency detected"
+          description: "Average database query latency is > 500ms for 1 minute"
+
+      - name: TooManyActiveDatabaseConnections
+        # Alert if active connections > 80% of max connections
+        expr: |
+          db_connections_active > (max_connections * 0.8)
+        for: 1m
+        labels:
+          severity: warning
+          component: database
+          metric: connection_usage
+        annotations:
+          summary: "Too many active database connections detected"
+          description: "Active database connections exceed 80% of max connections"
+
+  - name: redis_cache_performance
+    rules:
+      - name: LowCacheHitRate
+        # Alert if cache hit rate < 60% for 5 minutes
+        expr: |
+          avg by (namespace) (cache_hit_rate{namespace=~\"tasks|conversations|scripts|storyboards|resources\"}) < 0.6
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+          metric: cache_hit_rate
+        annotations:
+          summary: "Low cache hit rate detected"
+          description: "Average cache hit rate is < 60% for 5 minutes"
+
+      - name: VeryLowCacheHitRate
+        # Alert if cache hit rate < 40% for 1 minute
+        expr: |
+          avg by (namespace) (cache_hit_rate{namespace=~\"tasks|conversations|scripts|storyboards|resources\"}) < 0.4
+        for: 1m
+        labels:
+          severity: critical
+          component: redis
+          metric: cache_hit_rate
+        annotations:
+          summary: "Very low cache hit rate detected"
+          description: "Average cache hit rate is < 40% for 1 minute"
+
+      - name: HighRedisMemoryUsage
+        # Alert if Redis memory usage > 80% of max memory
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+          metric: memory_usage
+        annotations:
+          summary: "High Redis memory usage detected"
+          description: "Redis memory usage exceeds 80% of max memory"
+
+  - name: task_execution
+    rules:
+      - name: TooManyActiveTasks
+        # Alert if active tasks > 100 for 5 minutes
+        expr: |
+          sum by (status) (tasks_active) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: tasks
+          metric: active_tasks
+        annotations:
+          summary: "Too many active tasks detected"
+          description: "Number of active tasks exceeds 100 for 5 minutes"
+
+      - name: CriticalTooManyActiveTasks
+        # Alert if active tasks > 200 for 1 minute
+        expr: |
+          sum by (status) (tasks_active) > 200
+        for: 1m
+        labels:
+          severity: critical
+          component: tasks
+          metric: active_tasks
+        annotations:
+          summary: "Critical number of active tasks detected"
+          description: "Number of active tasks exceeds 200 for 1 minute"
+
+      - name: HighTaskFailureRate
+        # Alert if task failure rate > 10% for 5 minutes
+        expr: |
+          rate(tasks_total{status=\"failed\"}[5m]) / rate(tasks_total[5m]) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+          component: tasks
+          metric: failure_rate
+        annotations:
+          summary: "High task failure rate detected"
+          description: "Task failure rate is > 10% for 5 minutes"
+
+      - name: CriticalTaskFailureRate
+        # Alert if task failure rate > 20% for 1 minute
+        expr: |
+          rate(tasks_total{status=\"failed\"}[1m]) / rate(tasks_total[1m]) > 0.20
+        for: 1m
+        labels:
+          severity: critical
+          component: tasks
+          metric: failure_rate
+        annotations:
+          summary: "Critical task failure rate detected"
+          description: "Task failure rate is > 20% for 1 minute"
+
+      - name: LongRunningTask
+        # Alert if any task is running for > 1 hour
+        expr: |
+          max by (task_id) (task_duration_seconds > 3600)
+        for: 1m
+        labels:
+          severity: warning
+          component: tasks
+          metric: task_duration
+        annotations:
+          summary: "Long running task detected"
+          description: "Task has been running for more than 1 hour"
+
+  - name: agent_performance
+    rules:
+      - name: HighAgentRequestLatency
+        # Alert if agent request latency > 30s for 5 minutes
+        expr: |
+          avg by (agent_name, model) (rate(agent_request_duration_seconds_sum[5m]) / rate(agent_request_duration_seconds_count[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+          component: agents
+          metric: request_latency
+        annotations:
+          summary: "High agent request latency detected"
+          description: "Average agent request latency is > 30s for 5 minutes"
+
+      - name: CriticalAgentRequestLatency
+        # Alert if agent request latency > 60s for 1 minute
+        expr: |
+          avg by (agent_name, model) (rate(agent_request_duration_seconds_sum[1m]) / rate(agent_request_duration_seconds_count[1m])) > 60
+        for: 1m
+        labels:
+          severity: critical
+          component: agents
+          metric: request_latency
+        annotations:
+          summary: "Critical agent request latency detected"
+          description: "Average agent request latency is > 60s for 1 minute"
+
+      - name: HighAgentErrorRate
+        # Alert if agent error rate > 10% for 5 minutes
+        expr: |
+          rate(agent_requests_total{status=~\"error|failed\"}[5m]) / rate(agent_requests_total[5m]) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+          component: agents
+          metric: error_rate
+        annotations:
+          summary: "High agent error rate detected"
+          description: "Agent error rate is > 10% for 5 minutes"

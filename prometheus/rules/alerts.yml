@@ -1,0 +1,182 @@
+# Prometheus Alertmanager Rules
+
+# Critical Alerts
+- name: ApplicationDown
+  expr: up{job="arya-video-agent"} == 0
+  for: 1m
+  labels:
+    severity: critical
+    team: devops
+    category: availability
+  annotations:
+    summary: "Arya Video Agent application is down!"
+    description: "The application has been down for more than 1 minute."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/application-down"
+
+- name: DatabaseConnectionDown
+  expr: db_connections_active == 0
+  for: 1m
+  labels:
+    severity: critical
+    team: db-team
+    category: database
+  annotations:
+    summary: "Database connection pool is empty!"
+    description: "No active database connections for more than 1 minute."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/database-connection-down"
+
+- name: CacheHitRateLow
+  expr: avg(cache_hit_rate) < 0.3
+  for: 5m
+  labels:
+    severity: critical
+    team: cache-team
+    category: performance
+  annotations:
+    summary: "Cache hit rate is critically low!"
+    description: "Average cache hit rate is below 30% for 5 minutes."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/cache-hit-rate-low"
+
+# High Severity Alerts
+- name: HighErrorRate
+  expr: rate(http_errors_total[5m]) > 0.1
+  for: 2m
+  labels:
+    severity: high
+    team: devops
+    category: errors
+  annotations:
+    summary: "High error rate detected!"
+    description: "HTTP error rate is above 10% for 2 minutes."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/high-error-rate"
+
+- name: DatabaseSlowQueries
+  expr: histogram_quantile(0.95, db_query_duration_seconds) > 1.0
+  for: 5m
+  labels:
+    severity: high
+    team: db-team
+    category: performance
+  annotations:
+    summary: "Database queries are slow!"
+    description: "95th percentile of database query duration is above 1 second."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/database-slow-queries"
+
+- name: TaskProcessingSlow
+  expr: histogram_quantile(0.95, task_duration_seconds) > 60.0
+  for: 5m
+  labels:
+    severity: high
+    team: devops
+    category: performance
+  annotations:
+    summary: "Task processing is slow!"
+    description: "95th percentile of task duration is above 60 seconds."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/task-processing-slow"
+
+- name: QueueBacklogGrowing
+  expr: queue_length{queue_name="tasks", status="pending"} > 100
+  for: 5m
+  labels:
+    severity: high
+    team: devops
+    category: queue
+  annotations:
+    summary: "Task queue backlog is growing!"
+    description: "More than 100 tasks are pending in the task queue."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/queue-backlog-growing"
+
+# Warning Alerts
+- name: HighCPUUsage
+  expr: cpu_usage_percent > 80
+  for: 5m
+  labels:
+    severity: warning
+    team: devops
+    category: resources
+  annotations:
+    summary: "High CPU usage detected!"
+    description: "CPU usage is above 80% for 5 minutes."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/high-cpu-usage"
+
+- name: HighMemoryUsage
+  expr: memory_usage_bytes / (1024 * 1024 * 1024) > 8.0
+  for: 5m
+  labels:
+    severity: warning
+    team: devops
+    category: resources
+  annotations:
+    summary: "High memory usage detected!"
+    description: "Memory usage is above 8 GB for 5 minutes."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/high-memory-usage"
+
+- name: HighDiskUsage
+  expr: disk_usage_bytes{mount_point="/"} / (1024 * 1024 * 1024) > 0.8
+  for: 10m
+  labels:
+    severity: warning
+    team: devops
+    category: resources
+  annotations:
+    summary: "High disk usage detected!"
+    description: "Root disk usage is above 80% for 10 minutes."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/high-disk-usage"
+
+- name: ActiveTasksTooMany
+  expr: sum(tasks_active) > 50
+  for: 5m
+  labels:
+    severity: warning
+    team: devops
+    category: load
+  annotations:
+    summary: "Too many active tasks!"
+    description: "More than 50 tasks are currently active."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/active-tasks-too-many"
+
+# Info Alerts
+- name: TaskFailureRate
+  expr: rate(tasks_total{status="failed"}[10m]) > 0.05
+  for: 10m
+  labels:
+    severity: info
+    team: devops
+    category: tasks
+  annotations:
+    summary: "Task failure rate is elevated!"
+    description: "Task failure rate is above 5% for 10 minutes."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/task-failure-rate"
+
+- name: AgentRequestSlow
+  expr: histogram_quantile(0.95, agent_request_duration_seconds) > 10.0
+  for: 10m
+  labels:
+    severity: info
+    team: devops
+    category: performance
+  annotations:
+    summary: "Agent requests are slow!"
+    description: "95th percentile of agent request duration is above 10 seconds."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/agent-request-slow"
+
+- name: APIResponseTimeSlow
+  expr: histogram_quantile(0.95, http_request_duration_seconds{endpoint="/api/v1/tasks"}) > 0.5
+  for: 5m
+  labels:
+    severity: info
+    team: devops
+    category: performance
+  annotations:
+    summary: "API response time is slow!"
+    description: "95th percentile of API response time for /api/v1/tasks is above 500ms."
+    runbook_url: "https://docs.arya-video-agent.com/runbooks/api-response-time-slow"
+
+# Silence rules (suppress noisy alerts during known maintenance windows)
+- name: MaintenanceWindowSilence
+  expr: alertname =~ ".*High.*"
+  labels:
+    maintenance: "true"
+  silences:
+    - source_labels:
+        maintenance: "true"

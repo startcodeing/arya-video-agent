@@ -1,0 +1,105 @@
+# Prometheus Alertmanager configuration
+# Alertmanager configuration
+
+# Global configuration
+global:
+  resolve_timeout: 5m
+  route:
+    group_by: ['alertname', 'cluster', 'service']
+    group_wait: 10s
+    group_interval: 10s
+    repeat_interval: 12h
+    receiver: 'default-receiver'
+    routes:
+      # High severity alerts
+      - match:
+          severity: 'critical'
+        receiver: 'pagerduty'
+        continue: true
+      # Database alerts
+      - match:
+          alertname: 'DatabaseConnectionDown'
+        receiver: 'db-team'
+        continue: true
+      # Cache alerts
+      - match_re:
+          alertname: 'Cache.*'
+        receiver: 'cache-team'
+        continue: true
+      # Application alerts
+      - match:
+          alertname: 'Application.*'
+        receiver: 'devops'
+        continue: true
+
+  # Inhibit rules
+  inhibit_rules:
+    # If Critical alert is firing, inhibit Warning alerts
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      equal: ['alertname']
+
+# Receivers
+receivers:
+  # Default receiver
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'alerts@arya-video-agent.com'
+        from: 'prometheus@arya-video-agent.com'
+        smarthost: 'localhost'
+        auth_username: 'prometheus'
+        auth_password: 'prometheus_password'
+        send_resolved: true
+        html: '<table border="1" cellpadding="0" cellpadding="3" cellspacing="0"><thead><tr><th>Alert Name</th><th>Severity</th><th>Start Time</th><th>Summary</th></tr></thead><tbody>{{ range .Alerts }}<tr><td>{{ .Labels.alertname }}</td><td>{{ .Labels.severity }}</td><td>{{ .StartsAt.Format "2006-01-02 15:04:05" }}</td><td>{{ .Annotations.summary }}</td></tr>{{ end }}</tbody></table>'
+
+  # PagerDuty receiver
+  - name: 'pagerduty'
+    pagerduty_configs:
+      - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+        description: '{{ template "Alertname: " }}'
+          severity: '{{ template "Severity" }}'
+          summary: '{{ template "Description" }}'
+          details: 'This is a critical alert!'
+
+  # Slack receiver
+  - name: 'slack'
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#alerts'
+        username: 'Prometheus'
+        icon_emoji: ':warning:'
+        title: '{{ template "Alertname" }}'
+        text: '{{ template "Description" }}'
+        fields:
+          - title: 'Severity'
+            value: '{{ template "Severity" }}'
+          - title: 'Start Time'
+            value: '{{ template "StartsAt" }}'
+
+  # Email receivers for specific teams
+  - name: 'db-team'
+    email_configs:
+      - to: 'db-team@arya-video-agent.com'
+        from: 'prometheus@arya-video-agent.com'
+        headers:
+          Subject: '[DB Alert] {{ template "Alertname" }}'
+
+  - name: 'cache-team'
+    email_configs:
+      - to: 'cache-team@arya-video-agent.com'
+        from: 'prometheus@arya-video-agent.com'
+        headers:
+          Subject: '[Cache Alert] {{ template "Alertname" }}'
+
+  - name: 'devops'
+    email_configs:
+      - to: 'devops@arya-video-agent.com'
+        from: 'prometheus@arya-video-agent.com'
+        headers:
+          Subject: '[App Alert] {{ template "Alertname" }}'
+
+# Templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

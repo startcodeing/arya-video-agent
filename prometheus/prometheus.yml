@@ -1,0 +1,52 @@
+# Prometheus configuration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'arya-video-agent'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+      api_url: http://alertmanager:9093/api/v1
+      resend_delay: 5m
+      group_interval: 5m
+      group_wait: 10s
+
+# Rule files
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Arya Video Agent Application
+  - job_name: 'arya-video-agent'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - 'arya-video-agent:8000'
+    relabel_configs:
+      - source_labels: [__address__]
+        separator: ';'
+        regex: '([^:]+)(?::\d+)?;(.*)'
+        replacement: '$2'
+        target_label: __param_target
+      - action: replace
+        source_labels: [__param_target]
+        regex: '(.*)'
+        replacement: 'arya-video-agent'
+        target_label: instance
+
+  # Prometheus itself
+  - job_name: 'prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - 'localhost:9090'

@@ -1,0 +1,270 @@
+# Prometheus alerting rules for Arya Video Agent
+
+groups:
+  - name: video_agent_api_alerts
+    interval: 30s
+    rules:
+      # High error rate
+      - alert: HighAPIErrorRate
+        expr: rate(http_requests_total{job="video-agent-api",status=~"5.."}[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High API error rate detected"
+          description: "API error rate is {{ $value }} errors per second"
+
+      # High error rate (critical)
+      - alert: CriticalAPIErrorRate
+        expr: rate(http_requests_total{job="video-agent-api",status=~"5.."}[5m]) > 50
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical API error rate detected"
+          description: "API error rate is {{ $value }} errors per second"
+
+      # High request latency
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High API request latency detected"
+          description: "95th percentile request latency is {{ $value }}s"
+
+      # Critical request latency
+      - alert: CriticalRequestLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical API request latency detected"
+          description: "95th percentile request latency is {{ $value }}s"
+
+      # High task failure rate
+      - alert: HighTaskFailureRate
+        expr: rate(tasks_total{status="failed"}[5m]) / rate(tasks_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High task failure rate detected"
+          description: "Task failure rate is {{ $value | humanizePercentage }}"
+
+      # Critical task failure rate
+      - alert: CriticalTaskFailureRate
+        expr: rate(tasks_total{status="failed"}[5m]) / rate(tasks_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical task failure rate detected"
+          description: "Task failure rate is {{ $value | humanizePercentage }}"
+
+  - name: video_agent_cache_alerts
+    interval: 1m
+    rules:
+      # Low cache hit rate
+      - alert: LowCacheHitRate
+        expr: rate(cache_hits_total[5m]) / rate(cache_requests_total[5m]) < 0.3
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Low cache hit rate detected"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      # Critical cache hit rate
+      - alert: CriticalCacheHitRate
+        expr: rate(cache_hits_total[5m]) / rate(cache_requests_total[5m]) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical cache hit rate detected"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      # High cache miss rate
+      - alert: HighCacheMissRate
+        expr: rate(cache_misses_total[5m]) / rate(cache_requests_total[5m]) > 0.7
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High cache miss rate detected"
+          description: "Cache miss rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+  - name: video_agent_database_alerts
+    interval: 1m
+    rules:
+      # High database error rate
+      - alert: HighDBErrorRate
+        expr: rate(db_queries_total{status="error"}[5m]) / rate(db_queries_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High database error rate detected"
+          description: "Database error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      # Critical database error rate
+      - alert: CriticalDBErrorRate
+        expr: rate(db_queries_total{status="error"}[5m]) / rate(db_queries_total[5m]) > 0.2
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical database error rate detected"
+          description: "Database error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      # High database query latency
+      - alert: HighDBQueryLatency
+        expr: histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High database query latency detected"
+          description: "95th percentile query latency is {{ $value }}s"
+
+      # Critical database query latency
+      - alert: CriticalDBQueryLatency
+        expr: histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical database query latency detected"
+          description: "95th percentile query latency is {{ $value }}s"
+
+  - name: video_agent_system_alerts
+    interval: 1m
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: devops
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% for the last 5 minutes"
+
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: cpu_usage_percent > 90
+        for: 2m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is {{ $value }}% for the last 2 minutes"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (memory_usage_bytes / (1 << 30)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: devops
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      # Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: (memory_usage_bytes / (1 << 30)) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is {{ $value | humanizePercentage }} for the last 2 minutes"
+
+      # High disk usage
+      - alert: HighDiskUsage
+        expr: (disk_usage_bytes{mount_point="/"} / disk_usage_bytes{mount_point="/",type="total"}) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: devops
+        annotations:
+          summary: "High disk usage detected"
+          description: "Root disk usage is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      # Critical disk usage
+      - alert: CriticalDiskUsage
+        expr: (disk_usage_bytes{mount_point="/"} / disk_usage_bytes{mount_point="/",type="total"}) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "Critical disk usage detected"
+          description: "Root disk usage is {{ $value | humanizePercentage }} for the last 2 minutes"
+
+  - name: video_agent_queue_alerts
+    interval: 1m
+    rules:
+      # Long task queue
+      - alert: LongTaskQueue
+        expr: queue_length{queue_name="tasks", status="pending"} > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Long task queue detected"
+          description: "Pending task queue length is {{ $value }}"
+
+      # Critical task queue
+      - alert: CriticalTaskQueue
+        expr: queue_length{queue_name="tasks", status="pending"} > 500
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical task queue length detected"
+          description: "Pending task queue length is {{ $value }}"
+
+      # High failed task rate
+      - alert: HighFailedTaskRate
+        expr: rate(queue_messages_processed_total{queue_name="tasks", status="failed"}[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High failed task rate detected"
+          description: "Failed task rate is {{ $value }} per second"
+
+      # Critical failed task rate
+      - alert: CriticalFailedTaskRate
+        expr: rate(queue_messages_processed_total{queue_name="tasks", status="failed"}[5m]) > 50
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Critical failed task rate detected"
+          description: "Failed task rate is {{ $value }} per second"
