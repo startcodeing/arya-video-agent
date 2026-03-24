@@ -1,48 +1,47 @@
 # Web Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
 
 # Database
-sqlalchemy[asyncio]==2.0.23
-asyncpg==0.29.0
-alembic==1.12.1
+sqlalchemy[asyncio]==2.0.36
+psycopg[binary]==3.2.13
+alembic==1.14.0
 
 # Cache & Queue
-redis==5.0.1
-redis[hiredis]==2.2.0
-celery==5.3.4
-kombu==5.3.5
+redis[hiredis]==5.2.1
+celery==5.4.0
+kombu==5.4.2
 
 # Model APIs
-openai==1.3.7
-anthropic==0.8.1
+openai==1.58.1
+anthropic==0.42.0
 
 # Video Processing
 ffmpeg-python==0.2.0
 
 # Storage
-boto3==1.34.7
+boto3==1.36.5
 
 # Monitoring
-prometheus-client==0.19.0
+prometheus-client==0.21.0
 prometheus-fastapi-instrumentator==7.0.0
-psutil==5.9.6
+psutil==6.1.0
 
 # System Monitoring
-py-cpu==0.7.0
+py-cpuinfo==9.0.0
 
 # Development
-pytest==7.4.3
-pytest-asyncio==0.21.1
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-black==23.12.1
-flake8==7.0.0
-mypy==1.8.0
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+black==24.10.0
+flake8==7.1.1
+mypy==1.14.1
 isort==5.13.2
-pre-commit==3.6.0
+pre-commit==4.1.0
 
 # Documentation
-mkdocs==1.5.3
-mkdocs-material==9.5.3
+mkdocs==1.6.1
+mkdocs-material==9.6.5
